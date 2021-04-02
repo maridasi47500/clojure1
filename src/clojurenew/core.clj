@@ -43,6 +43,20 @@
   []
   (query db ["select * from bath"]))
 
+(defn rendercollection [title bdd template req]
+  (println "action create")
+  (def mytemplate (slurp (io/resource template)))
+  (def figure (map #(format mytemplate (get % :url "") (get % :title "") (get % :body "")) (output)))
+  (def body (format (slurp (io/resource "bains.html")) (str/join "" figure)))
+  (def title "hey")
+  (def hey (if (zero? (count (output))) "<p>il n'y a pas de bains à afficher</p>" body))
+  (def reponsebody (format (slurp (io/resource "index.html")) title hey))
+  {:status 200
+    :body reponsebody
+    :contenttype "text/html"
+    :redirect ""
+    })
+
 (defn actioncreate [title hey req]
   (println "action create")
   (def heyreader (io/reader (:body req) :encoding "UTF-8"))
@@ -63,7 +77,7 @@
   {:status 301
     :body (slurp (io/resource "redirect.html"))
     :contenttype "text/html"
-    :redirect "/"
+    :redirect "/voir_bains"
     })
 
 (defn create-db
@@ -107,6 +121,8 @@
           "/hello" (renderhtml "hello" "hello.html")
           "/create_bath" (renderhtml "hello" "form.html")
           "/action_create_bath" (actioncreate "hello" "form.html" req)
+          "/voir_bains" (rendercollection "hello" output "_bain.html" req)
+
           (renderhtml "Erreur" "404.html"))))
   (def status (get html :status 200))
   (def content (get html :contenttype "text/html"))
