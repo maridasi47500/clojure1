@@ -8,10 +8,24 @@
   #_(println-str "<html><head><title>" title "</title></head><body>" body "</body></html>" "")
   (format (slurp (io/resource "index.html")) title body))
 
+(defn lirefichier [hey]
+  (slurp (io/resource hey)))
+
+(defn renderhtml [title hey]
+  (renderfigure title (clojurenew.core/lireficher hey)))
+
 (defn app [req]
+  (println "my application")
+  (println (get req :uri "aucune adresse url"))
+  (def uri (get req :uri "aucune adresse url"))
+  (def html (let [mystr uri]
+    (case mystr
+          "/" (renderhtml "hey" "welcome.html")
+          "/hello" (renderhtml "hello" "hello.html")
+          (renderhtml "Erreur" "404.html"))))
   {:status  200
    :headers {"Content-Type" "text/html"}
-   :body    (renderfigure "hey" "hello there")})
+   :body    html})
 
 
 (defn -main [& args]
