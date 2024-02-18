@@ -6,9 +6,8 @@
             [clojure.java.jdbc :refer :all]
             [cheshire.core :as json]
             ))
-  (use 'ring.util.codec)
-  (use 'clojure.walk)
-  (require '[clojure.string :as str])
+  (:use [ring.util.codec]
+        [clojure.walk])
 
 (def testdata
   { :url "http://example.com",
@@ -52,19 +51,16 @@
   (def a (slurp heyreader) )
   (println a)
 
-  (def myhash (keywordize-keys (form-decode a)))
+  (def myhash (keywordize-keys (form-decode a) {}))
   (println "hey HEY he")
-  (println myhash)
   (def mytestdata {:title (get myhash :title "hye")
                    :url (get myhash :url "url")
-                   :body (str/join "" (get myhash :body ["ur" "body"])) })
+                   :body (get myhash :body "body")})
   (insert! db :bath mytestdata)
-  (println "OHOHOH")
-  {:status 301
-    :body (slurp (io/resource "redirect.html"))
+  ({:status 200
+    :body (format (slurp (io/resource "index.html")) title (slurp (io/resource hey)))
     :contenttype "text/html"
-    :redirect "/"
-    })
+    }))
 
 (defn create-db
   "create db and table"
@@ -95,8 +91,6 @@
 
 
 (defn app [req]
-  (println "bdd")
-  (println (output))
   (println "my application")
   (println req)
   (println (get req :uri "aucune adresse url"))
@@ -111,10 +105,8 @@
   (def status (get html :status 200))
   (def content (get html :contenttype "text/html"))
   (def body (get html :body "<h1>erreur 404 desole</h1>"))
-  (def redirect (get html :redirect ""))
   {:status  status
-   :headers {"Content-Type" content
-             "Location" redirect}
+   :headers {"Content-Type" content}
    :body    body})
 
 
