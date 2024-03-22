@@ -51,7 +51,7 @@
   (println "action voirbain")
   (println req)
   (def mytemplate (slurp (io/resource template)))
-  (def figure (map #(format mytemplate (get % :title "") (get % :body "") (get % :id "")) (getbyid myid)))
+  (def figure (map #(format mytemplate (get % :title "") (get % :body "") (get % :id "") (get % :id "")) (getbyid myid)))
   (def body (format (slurp (io/resource "bains.html")) (str/join "" figure)))
   (def title "hey")
   (def hey (if (zero? (count (output))) "<p>il n'y a pas de bain à afficher</p>" body))
@@ -79,7 +79,7 @@
 (defn rendercollection [title bdd template req]
   (println "action create")
   (def mytemplate (slurp (io/resource template)))
-  (def figure (map #(format mytemplate  (get % :title "") (get % :body "") (get % :id "") (get % :url "") (get % :id "")) (output)))
+  (def figure (map #(format mytemplate  (get % :title "") (get % :body "") (get % :id "") (get % :url "") (get % :id "") (get % :id "")) (output)))
   (def body (format (slurp (io/resource "bains.html")) (str/join "" figure)))
   (def title "hey")
   (def hey (if (zero? (count (output))) "<p>il n'y a pas de bains à afficher</p>" body))
@@ -88,6 +88,28 @@
     :body reponsebody
     :contenttype "text/html"
     :redirect ""
+    })
+(defn actiondelete [title req]
+  (println "action delete")
+  (def heyreader (io/reader (:body req) :encoding "UTF-8"))
+  (println heyreader)
+  (println "hey HEY action create")
+  (println "hHo")
+  (def a (slurp heyreader) )
+  (println a)
+
+  (def myhash (keywordize-keys (form-decode a)))
+  (println "hey HEY he")
+  (println myhash)
+  (def id (get myhash :id ""))
+  (execute! db
+  ["delete from bath where id = ?"
+    id])
+  (println "OHOHOH")
+  {:status 301
+    :body (slurp (io/resource "redirect.html"))
+    :contenttype "text/html"
+    :redirect "/voir_bains"
     })
 (defn actionupdate [title hey req]
   (println "action create")
@@ -192,6 +214,7 @@
           (re-find #"^/create_bath$" uri) (renderhtml "hello" "form.html")
           (re-find #"^/action_create_bath$" uri) (actioncreate "hello" "form.html" req)
           (re-find #"^/action_update_bath$" uri) (actionupdate "hello" "formedit.html" req)
+          (re-find #"^/action_delete_bath$" uri) (actiondelete "hello"  req)
           (re-find #"^/voir_bains$" uri) (rendercollection "hello" output "_bain.html" req)
           (re-find #"^/voir_bain/\d+$" uri) (voirbain "hello" "voirbain.html" req (get (re-find #"^/voir_bain/(\d+)$" uri) 1))
           (re-find #"^/edit_bain/\d+$" uri) (editbain "hello" "formedit.html" req (get (re-find #"^/edit_bain/(\d+)$" uri) 1))
